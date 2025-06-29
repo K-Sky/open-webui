@@ -1517,19 +1517,19 @@
 				const model = $models.filter((m) => m.id === modelId).at(0);
 
 				if (model) {
-					const messages = createMessagesList(_history, parentId);
+					//const messages = createMessagesList(_history, parentId);
 					// If there are image files, check if model is vision capable
-					const hasImages = messages.some((message) =>
+					/*const hasImages = messages.some((message) =>
 						message.files?.some((file) => file.type === 'image')
-					);
+					);*/
 
-					if (hasImages && !(model.info?.meta?.capabilities?.vision ?? true)) {
+					/*if (hasImages && !(model.info?.meta?.capabilities?.vision ?? true)) {
 						toast.error(
 							$i18n.t('Model {{modelName}} is not vision capable', {
 								modelName: model.name ?? model.id
 							})
 						);
-					}
+					}*/
 
 					let responseMessageId =
 						responseMessageIds[`${modelId}-${modelIdx ? modelIdx : _modelIdx}`];
@@ -1550,21 +1550,21 @@
 	};
 
 	const sendPromptSocket = async (_history, model, responseMessageId, _chatId) => {
-		const chatMessages = createMessagesList(history, history.currentId);
+		//const chatMessages = createMessagesList(history, history.currentId);
 		const responseMessage = _history.messages[responseMessageId];
 		const userMessage = _history.messages[responseMessage.parentId];
 
-		const chatMessageFiles = chatMessages
+		/*const chatMessageFiles = chatMessages
 			.filter((message) => message.files)
-			.flatMap((message) => message.files);
+			.flatMap((message) => message.files);*/
 
 		// Filter chatFiles to only include files that are in the chatMessageFiles
-		chatFiles = chatFiles.filter((item) => {
+		/*chatFiles = chatFiles.filter((item) => {
 			const fileExists = chatMessageFiles.some((messageFile) => messageFile.id === item.id);
 			return fileExists;
-		});
+		});*/
 
-		let files = JSON.parse(JSON.stringify(chatFiles));
+		/*let files = JSON.parse(JSON.stringify(chatFiles));
 		files.push(
 			...(userMessage?.files ?? []).filter((item) =>
 				['doc', 'file', 'collection'].includes(item.type)
@@ -1575,7 +1575,7 @@
 		files = files.filter(
 			(item, index, array) =>
 				array.findIndex((i) => JSON.stringify(i) === JSON.stringify(item)) === index
-		);
+		);*/
 
 		scrollToBottom();
 		eventTarget.dispatchEvent(
@@ -1594,22 +1594,7 @@
 			true;
 
 		let messages = [
-			params?.system || $settings.system
-				? {
-						role: 'system',
-						content: `${promptTemplate(
-							params?.system ?? $settings?.system ?? '',
-							$user?.name,
-							$settings?.userLocation
-								? await getAndUpdateUserLocation(localStorage.token).catch((err) => {
-										console.error(err);
-										return undefined;
-									})
-								: undefined
-						)}`
-					}
-				: undefined,
-			...createMessagesList(_history, responseMessageId).map((message) => ({
+			...[userMessage].map((message) => ({
 				...message,
 				content: processDetails(message.content)
 			}))
@@ -1659,7 +1644,7 @@
 							: undefined
 				},
 
-				files: (files?.length ?? 0) > 0 ? files : undefined,
+				//files: (files?.length ?? 0) > 0 ? files : undefined,
 
 				filter_ids: selectedFilterIds.length > 0 ? selectedFilterIds : undefined,
 				tool_ids: selectedToolIds.length > 0 ? selectedToolIds : undefined,
@@ -1701,7 +1686,7 @@
 				id: responseMessageId,
 
 				background_tasks: {
-					...(!$temporaryChatEnabled &&
+					/*...(!$temporaryChatEnabled &&
 					(messages.length == 1 ||
 						(messages.length == 2 &&
 							messages.at(0)?.role === 'system' &&
@@ -1712,7 +1697,7 @@
 								tags_generation: $settings?.autoTags ?? true
 							}
 						: {}),
-					follow_up_generation: $settings?.autoFollowUps ?? true
+					follow_up_generation: $settings?.autoFollowUps ?? true*/
 				},
 
 				...(stream && (model.info?.meta?.capabilities?.usage ?? false)

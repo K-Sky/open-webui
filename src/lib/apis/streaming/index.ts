@@ -97,30 +97,16 @@ async function* openAIStreamToIterator(
 async function* streamLargeDeltasAsRandomChunks(
 	iterator: AsyncGenerator<TextStreamUpdate>
 ): AsyncGenerator<TextStreamUpdate> {
-	for await (const textStreamUpdate of iterator) {
-		if (textStreamUpdate.done) {
-			yield textStreamUpdate;
-			return;
-		}
+	for await (const update of iterator) {
+    // Preserve all original non-content logic  
+    if (update.done || update.error || update.sources ||   
+        update.selectedModelId || update.usage) {  
+      yield update;  
+      continue;  
+    }
 
-		if (textStreamUpdate.error) {
-			yield textStreamUpdate;
-			continue;
-		}
-		if (textStreamUpdate.sources) {
-			yield textStreamUpdate;
-			continue;
-		}
-		if (textStreamUpdate.selectedModelId) {
-			yield textStreamUpdate;
-			continue;
-		}
-		if (textStreamUpdate.usage) {
-			yield textStreamUpdate;
-			continue;
-		}
-
-		let content = textStreamUpdate.value;
+    // Only modify content streaming
+		let content = update.value;
 		if (content.length < 5) {
 			yield { done: false, value: content };
 			continue;

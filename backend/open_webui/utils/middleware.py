@@ -1005,6 +1005,7 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 async def process_chat_response(
     request, response, form_data, user, metadata, model, events, tasks
 ):
+    chunkBufferString = ""
     async def background_tasks_handler():
         message_map = Chats.get_messages_by_chat_id(metadata["chat_id"])
         message = message_map.get(metadata["message_id"]) if message_map else None
@@ -1742,6 +1743,7 @@ async def process_chat_response(
                     )
 
                 async def stream_body_handler(response):
+                    nonlocal chunkBufferString
                     nonlocal content
                     nonlocal content_blocks
 
@@ -1750,6 +1752,9 @@ async def process_chat_response(
                     async for line in response.body_iterator:
                         line = line.decode("utf-8") if isinstance(line, bytes) else line
                         data = line
+                        if len(chunkBufferString) > 0:
+                            data = chunkBufferString + data
+                            chunkBufferString = ""
 
                         # Skip empty lines
                         if not data.strip():
@@ -2000,12 +2005,14 @@ async def process_chat_response(
                                         "data": data,
                                     }
                                 )
+                                chunkBufferString = ""
                         except Exception as e:
                             done = "data: [DONE]" in line
                             if done:
                                 pass
                             else:
                                 log.debug("Error: ", e)
+                                chunkBufferString = "data: " + data
                                 continue
 
                     if content_blocks:
